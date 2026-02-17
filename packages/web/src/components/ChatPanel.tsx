@@ -15,7 +15,7 @@ interface ChatPanelProps {
 export default function ChatPanel({ apiEndpoint, placeholder = 'Ask a question...' }: ChatPanelProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
-  const [isStreaming, setIsStreaming] = useState(false);
+  const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -24,13 +24,13 @@ export default function ChatPanel({ apiEndpoint, placeholder = 'Ask a question..
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!input.trim() || isStreaming) return;
+    if (!input.trim() || loading) return;
 
     const userMessage: Message = { role: 'user', content: input.trim() };
     const newMessages = [...messages, userMessage];
     setMessages(newMessages);
     setInput('');
-    setIsStreaming(true);
+    setLoading(true);
 
     try {
       const res = await fetch(apiEndpoint, {
@@ -41,36 +41,19 @@ export default function ChatPanel({ apiEndpoint, placeholder = 'Ask a question..
         }),
       });
 
+      const data = await res.json();
+
       if (!res.ok) {
-        const errText = await res.text();
-        setMessages([...newMessages, { role: 'assistant', content: `Error: ${errText || res.statusText}` }]);
+        setMessages([...newMessages, { role: 'assistant', content: `Error: ${data.error || res.statusText}` }]);
         return;
       }
 
-      const reader = res.body?.getReader();
-      if (!reader) {
-        setMessages([...newMessages, { role: 'assistant', content: 'Error: No response stream' }]);
-        return;
-      }
-
-      const decoder = new TextDecoder();
-      let assistantContent = '';
-
-      // Add empty assistant message that we'll stream into
-      setMessages([...newMessages, { role: 'assistant', content: '' }]);
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        assistantContent += decoder.decode(value, { stream: true });
-        setMessages([...newMessages, { role: 'assistant', content: assistantContent }]);
-      }
+      setMessages([...newMessages, { role: 'assistant', content: data.content }]);
     } catch (err) {
       const errMsg = err instanceof Error ? err.message : 'Network error';
       setMessages([...newMessages, { role: 'assistant', content: `Error: ${errMsg}` }]);
     } finally {
-      setIsStreaming(false);
+      setLoading(false);
     }
   }
 
@@ -112,10 +95,23 @@ export default function ChatPanel({ apiEndpoint, placeholder = 'Ask a question..
               whiteSpace: 'pre-wrap',
               wordBreak: 'break-word',
             }}>
-              {msg.content || (isStreaming && i === messages.length - 1 ? '...' : '')}
+              {msg.content}
             </div>
           </div>
         ))}
+        {loading && (
+          <div style={{ alignSelf: 'flex-start', maxWidth: '80%' }}>
+            <div style={{
+              padding: '8px 12px',
+              borderRadius: 8,
+              fontSize: 13,
+              background: '#1a1a2e',
+              color: '#6d5fad',
+            }}>
+              Thinking...
+            </div>
+          </div>
+        )}
         <div ref={messagesEndRef} />
       </div>
 
@@ -131,7 +127,7 @@ export default function ChatPanel({ apiEndpoint, placeholder = 'Ask a question..
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder={placeholder}
-          disabled={isStreaming}
+          disabled={loading}
           style={{
             flex: 1,
             padding: '8px 12px',
@@ -145,19 +141,19 @@ export default function ChatPanel({ apiEndpoint, placeholder = 'Ask a question..
         />
         <button
           type="submit"
-          disabled={isStreaming || !input.trim()}
+          disabled={loading || !input.trim()}
           style={{
             padding: '8px 16px',
             fontSize: 13,
             fontWeight: 600,
-            background: isStreaming ? '#262626' : '#5b21b6',
+            background: loading ? '#262626' : '#5b21b6',
             color: '#fff',
             border: 'none',
             borderRadius: 6,
-            cursor: isStreaming ? 'wait' : 'pointer',
+            cursor: loading ? 'wait' : 'pointer',
           }}
         >
-          {isStreaming ? '...' : 'Send'}
+          {loading ? '...' : 'Send'}
         </button>
       </form>
     </div>

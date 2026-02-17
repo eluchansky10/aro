@@ -150,25 +150,22 @@ export default function ManualPage() {
       <Header currentPage="manual" />
 
       <main style={{ maxWidth: 900, margin: '0 auto', padding: '40px 24px' }}>
-        {/* Manual content */}
+        {/* AI Chat — at the top */}
         <div style={{ marginBottom: 32 }}>
-          {renderMarkdown(MANUAL_CONTENT)}
-        </div>
-
-        {/* Chat toggle */}
-        <div style={{
-          borderTop: '1px solid #262626',
-          paddingTop: 24,
-        }}>
           <div style={{
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            marginBottom: 16,
+            marginBottom: 12,
           }}>
-            <h2 style={{ margin: 0, fontSize: 16, fontWeight: 600, color: '#a3a3a3' }}>
-              Ask a Question
-            </h2>
+            <div>
+              <h2 style={{ margin: 0, fontSize: 16, fontWeight: 600, color: '#a3a3a3' }}>
+                Ask a Question
+              </h2>
+              <p style={{ fontSize: 13, color: '#525252', margin: '4px 0 0' }}>
+                Chat with our AI assistant powered by Claude Sonnet 4.5.
+              </p>
+            </div>
             <button
               onClick={() => setShowChat(!showChat)}
               style={{
@@ -186,16 +183,17 @@ export default function ManualPage() {
             </button>
           </div>
 
-          <p style={{ fontSize: 13, color: '#525252', margin: '0 0 16px' }}>
-            Have a question about ARO? Chat with our AI assistant powered by Claude Sonnet 4.5.
-          </p>
-
           {showChat && (
             <ChatPanel
               apiEndpoint="/api/manual-chat"
               placeholder="e.g. How do I upload context files?"
             />
           )}
+        </div>
+
+        {/* Manual content */}
+        <div style={{ borderTop: '1px solid #262626', paddingTop: 24 }}>
+          {renderMarkdown(MANUAL_CONTENT)}
         </div>
       </main>
     </div>

@@ -1,4 +1,4 @@
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
 import { MANUAL_CONTENT } from '../../manual/manual-content';
 
@@ -10,17 +10,17 @@ export async function POST(request: NextRequest) {
     const messages = body.messages;
 
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
-      return new Response('Messages array is required', { status: 400 });
+      return NextResponse.json({ error: 'Messages array is required' }, { status: 400 });
     }
 
     const apiKey = process.env.ANTHROPIC_API_KEY;
     if (!apiKey) {
-      return new Response('ANTHROPIC_API_KEY not configured', { status: 500 });
+      return NextResponse.json({ error: 'ANTHROPIC_API_KEY not configured' }, { status: 500 });
     }
 
     const client = new Anthropic({ apiKey });
 
-    const stream = client.messages.stream({
+    const response = await client.messages.create({
       model: MANUAL_CHAT_MODEL,
       max_tokens: 2048,
       system: `You are the ARO (Automated Research Orchestrator) help assistant. Answer questions about how to use ARO based on the user manual below. Be concise, helpful, and friendly. If a question is not covered by the manual, say so honestly.\n\n${MANUAL_CONTENT}`,
@@ -30,32 +30,12 @@ export async function POST(request: NextRequest) {
       })),
     });
 
-    const encoder = new TextEncoder();
-    const eventStream = new ReadableStream({
-      async start(controller) {
-        try {
-          for await (const event of stream) {
-            if (event.type === 'content_block_delta' && event.delta.type === 'text_delta') {
-              controller.enqueue(encoder.encode(event.delta.text));
-            }
-          }
-        } catch (err) {
-          const msg = err instanceof Error ? err.message : 'Stream error';
-          controller.enqueue(encoder.encode(`\n\n[Error: ${msg}]`));
-        } finally {
-          controller.close();
-        }
-      },
-    });
+    const textBlock = response.content.find((b) => b.type === 'text');
+    const text = textBlock && textBlock.type === 'text' ? textBlock.text : 'No response generated.';
 
-    return new Response(eventStream, {
-      headers: {
-        'Content-Type': 'text/plain; charset=utf-8',
-        'Cache-Control': 'no-cache',
-      },
-    });
+    return NextResponse.json({ content: text });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return new Response(message, { status: 500 });
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
