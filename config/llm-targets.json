@@ -1,0 +1,79 @@
+{
+  "targets": [
+    {
+      "id": "claude",
+      "name": "Claude",
+      "url": "https://claude.ai/new",
+      "capabilities": ["reasoning", "analysis", "coding", "writing", "research"],
+      "selectors": {
+        "input": "div.ProseMirror[contenteditable='true']",
+        "submit": "button[aria-label='Send Message']",
+        "response": "div[data-is-streaming] .font-claude-message, div.font-claude-message:last-of-type",
+        "streaming_indicator": "div[data-is-streaming='true']",
+        "done_indicator": "div[data-is-streaming='false']"
+      },
+      "quirks": {
+        "input_type": "prosemirror",
+        "needs_exec_command": true,
+        "streaming_attr": "data-is-streaming",
+        "stability_timeout_ms": 5000
+      },
+      "rate_limit_ms": 3000
+    },
+    {
+      "id": "chatgpt",
+      "name": "ChatGPT",
+      "url": "https://chatgpt.com",
+      "capabilities": ["reasoning", "analysis", "coding", "writing", "browsing"],
+      "selectors": {
+        "input": "#prompt-textarea",
+        "submit": "button[data-testid='send-button']",
+        "response": "div[data-message-author-role='assistant']:last-of-type .markdown",
+        "streaming_indicator": "button[data-testid='stop-button']",
+        "done_indicator": "button[data-testid='send-button']"
+      },
+      "quirks": {
+        "input_type": "contenteditable",
+        "needs_native_setter": true,
+        "stability_timeout_ms": 5000
+      },
+      "rate_limit_ms": 3000
+    },
+    {
+      "id": "gemini",
+      "name": "Gemini",
+      "url": "https://gemini.google.com/app",
+      "capabilities": ["reasoning", "analysis", "coding", "multimodal", "search"],
+      "selectors": {
+        "input": "div.ql-editor[contenteditable='true'], rich-textarea .ql-editor",
+        "submit": "button.send-button, button[aria-label='Send message']",
+        "response": "message-content:last-of-type .markdown",
+        "streaming_indicator": "mat-progress-bar",
+        "done_indicator": "message-content:last-of-type .complete"
+      },
+      "quirks": {
+        "input_type": "quill",
+        "stability_timeout_ms": 7000
+      },
+      "rate_limit_ms": 4000
+    },
+    {
+      "id": "perplexity",
+      "name": "Perplexity",
+      "url": "https://www.perplexity.ai",
+      "capabilities": ["research", "search", "citations", "fact-checking"],
+      "selectors": {
+        "input": "textarea[placeholder*='Ask']",
+        "submit": "button[aria-label='Submit']",
+        "response": "div.prose:last-of-type",
+        "streaming_indicator": "div.animate-pulse",
+        "done_indicator": "div.prose:last-of-type:not(.animate-pulse)"
+      },
+      "quirks": {
+        "input_type": "textarea",
+        "stability_timeout_ms": 8000
+      },
+      "rate_limit_ms": 5000
+    }
+  ]
+}

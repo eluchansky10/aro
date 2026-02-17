@@ -1,0 +1,7 @@
+{
+  "ws_port": 7749,
+  "api_key_env_var": "ANTHROPIC_API_KEY",
+  "max_concurrent_providers": 4,
+  "task_timeout_ms": 300000,
+  "default_stability_timeout_ms": 5000
+}

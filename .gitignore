@@ -1,0 +1,8 @@
+node_modules/
+dist/
+research/
+.env
+config/health-log.json
+*.tsbuildinfo
+.next/
+.vercel/
