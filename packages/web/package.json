@@ -8,7 +8,7 @@
     "start": "next start"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.39.0",
+    "@anthropic-ai/sdk": "^0.74.0",
     "jspdf": "^4.1.0",
     "jspdf-autotable": "^5.0.7",
     "next": "^15.1.0",
